@@ -1,0 +1,9 @@
+steps:
+#- name: 'gcr.io/cloud-builders/go'
+#  args: [ 'install', '$PROJECT_ID/spin-kub-v2-demo' ]
+#  env: [ 'PROJECT_ROOT=$PROJECT_ID/spin-kub-v2-demo' ]
+#  dir: 'src'
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '.' ]
+images:
+  - 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA'
