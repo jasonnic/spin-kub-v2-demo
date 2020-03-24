@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demo-go-app
+  name: demo-go-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-go-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: demo-go-app
+    spec:
+      containers:
+        - image: gcr.io/pubsec-demos/github.com/jasonnic/spin-kub-v2-demo
+          imagePullPolicy: IfNotPresent
+          name: spin-kub-v2-demo-1
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: demo-go-app
+  name: demo-go-app-hpa-rtl2
+  namespace: default
+spec:
+  maxReplicas: 5
+  metrics:
+    - resource:
+        name: cpu
+        targetAverageUtilization: 80
+      type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-go-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demo-go-app
+  name: demo-go-app-service
+  namespace: default
+spec:
+  clusterIP: 10.0.9.9
+  externalTrafficPolicy: Cluster
+  ports:
+    - nodePort: 32245
+      port: 80
+      protocol: TCP
+      targetPort: 8000
+  selector:
+    app: demo-go-app
+  sessionAffinity: None
+  type: LoadBalancer
